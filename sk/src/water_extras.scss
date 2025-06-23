@@ -419,3 +419,102 @@ input[type="checkbox"][role="switch"] {
     transition: margin 0.1s ease-in-out;
   }
 }
+
+/** Example:
+ * <ol role="tablist">
+ *   <li class="active">Tab 1</li>
+ *   <li>Tab 2</li>
+ *   <li>Tab 3</li>
+ * </ol>
+ * CREDIT: https://verpex.com/blog/website-tips/a-css-only-responsive-stepper-component (Modified)
+ */
+[role="tablist"] {
+  $active: var(--switch-checked-color);
+  $inactive: var(--border);
+  $circle: 3em; // size of the circle
+  $line: 5px; // thickness of the line
+
+  display: flex;
+  justify-content: space-between;
+  // inactive horizontal bar
+  // 95% to avoid line overflow, this is fine as it is always in a container
+  background: linear-gradient($inactive 0 0) no-repeat 50%
+    calc(($circle - $line) / 2) / 95% $line;
+  font-size: 1.2rem;
+  overflow: hidden;
+
+  // reset styles for the list
+  list-style: none;
+  counter-reset: step;
+  padding: 0;
+
+  // reset styles for buttons
+  button {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    &:active,
+    &:focus,
+    &:hover {
+      transform: none;
+      outline: none;
+      box-shadow: none;
+    }
+  }
+
+  li,
+  button {
+    display: grid;
+    place-items: center;
+    position: relative;
+
+    @mixin circle-style {
+      display: grid;
+      aspect-ratio: 1;
+      height: $circle;
+      background: $active;
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    // built-in circle w/ counter
+    &:not(:has(span))::before {
+      content: counter(step);
+      counter-increment: step;
+      place-content: center;
+      @include circle-style;
+    }
+    // custom circle (text or icon)
+    &:has(span) > span {
+      @include circle-style;
+      text-align: center;
+      align-items: center;
+
+      i {
+        color: var(--text);
+        font-size: 2rem;
+      }
+    }
+
+    // By default, all circles are styled as active.
+    // everything after .active will be inactive
+    &.active ~ li::before,
+    &.active ~ button::before,
+    &.active ~ li > span {
+      background: $inactive;
+    }
+
+    // horizontal bar between circles
+    &.active::after {
+      content: "";
+      position: absolute;
+      height: $line;
+      right: 100%;
+      top: calc(($circle - $line) / 2);
+      width: 100vw;
+      background: $active;
+    }
+  }
+}
