@@ -1,13 +1,20 @@
-<script>
-  import { alerts } from "$lib/components/Alerts.svelte";
+<script lang="ts">
+  import Alerts, { alerts } from "$lib/components/Alerts.svelte";
   import Dialog from "$lib/components/Dialog.svelte";
   import RadioText from "$lib/components/RadioText.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
+  import Stepper from "$lib/components/Stepper.svelte";
   import ToggleText from "$lib/components/ToggleText.svelte";
   import { metadata } from "$lib/metadata";
-  import { text } from "@sveltejs/kit";
 
   const COLORS = ["info", "success", "warning", "error"];
+
+  function preventDefault(fn: (event: Event) => void) {
+    return function (event: Event) {
+      event.preventDefault();
+      fn.call(this, event);
+    };
+  }
 
   $effect(() => {
     $metadata = {
@@ -25,6 +32,7 @@
     <code>&lt;Alerts /&gt;</code> component. These alerts will be shown anywhere
     the component is declared.
   </p>
+  <Alerts />
   <div role="group">
     {#each COLORS as type}
       <button
@@ -154,6 +162,105 @@
     For radio buttons, use the <code>RadioText</code> component:
   </p>
   <RadioText choices={["foo", "bar", "baz"]} value="bar" />
+</div>
+
+<div class="example">
+  <h2>Stepper</h2>
+  <p>
+    Use the <code>role="tablist"</code> attribute to create a stepper. Steps can
+    be <code>&lt;li&gt;</code> or <code>&lt;button&gt;</code> for interactive steps.
+  </p>
+  <blockquote>
+    NOTE: There must always be one active step otherwise the styling breaks.
+  </blockquote>
+  <h3>Non-interactive</h3>
+  <ol role="tablist">
+    <li>Step 1</li>
+    <li>Step 2</li>
+    <li class="active">Step 3</li>
+    <li>Step 4</li>
+    <li>Step 5</li>
+  </ol>
+  <h3>Interactive</h3>
+  <Stepper
+    steps={[
+      { name: "step1", label: "Step 1" },
+      { name: "step2", label: "Step 2" },
+      { name: "step3", label: "Step 3" },
+      { name: "step4", label: "Step 4" },
+    ]}
+    currentStep={0}
+    interactive={true}
+    hideLabels={true}
+  >
+    {#snippet children({ data, index, total, step: { label }, next, previous })}
+      {@const isLastStep = index === total - 1}
+      <form
+        onsubmit={preventDefault(
+          isLastStep ? () => alert("Form Submitted") : next
+        )}
+      >
+        <section class="card">
+          <header><h2>{label}</h2></header>
+          <div>
+            {#if index === 0}
+              <label>
+                <input
+                  type="text"
+                  bind:value={data.name}
+                  placeholder=""
+                  required
+                />
+                <span>Name</span>
+              </label>
+              <label>
+                <input type="text" bind:value={data.email} placeholder="" />
+                <span>Email</span>
+              </label>
+            {:else if index === 1}
+              <label>
+                <input
+                  type="text"
+                  bind:value={data.address}
+                  placeholder=""
+                  required
+                />
+                <span>Address</span>
+              </label>
+              <label>
+                <input type="text" bind:value={data.city} placeholder="" />
+                <span>City</span>
+              </label>
+            {:else if index === 2}
+              <label>
+                <input type="text" bind:value={data.zip} placeholder="" />
+                <span>Zip Code</span>
+              </label>
+            {:else if index === 3}
+              <label>
+                <input type="text" bind:value={data.country} placeholder="" />
+                <span>Country</span>
+              </label>
+            {/if}
+          </div>
+          <footer>
+            <div role="group">
+              <button type="button" onclick={previous}>previous</button>
+              <button type="submit">next</button>
+            </div>
+          </footer>
+        </section>
+      </form>
+    {/snippet}
+  </Stepper>
+  <h3>With Icons (or text)</h3>
+  <ol role="tablist">
+    <li><span><i class="bx bx-cart"></i></span></li>
+    <li class="active">
+      <span>Foo</span>
+    </li>
+    <li><span><i class="bx bx-truck"></i></span></li>
+  </ol>
 </div>
 
 <div class="example">
